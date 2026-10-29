@@ -1,0 +1,31 @@
+@use 'variables' as *;
+
+// Глобальні стилі: лише базові налаштування сторінки.
+// Стилі конкретних компонентів лежать поруч із компонентами
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: $color-bg;
+  color: $color-text;
+  line-height: 1.5;
+}
+
+// Блок app — каркас застосунку
+.app {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: $gap;
+  }
+}
