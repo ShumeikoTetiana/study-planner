@@ -1,121 +1,80 @@
 import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import Header from './components/Header'
+import TaskForm from './components/TaskForm'
+import TaskStats from './components/TaskStats'
+import TaskFilters from './components/TaskFilters'
+import TaskList from './components/TaskList'
+import { initialTasks } from './data/initialTasks'
+import type { NewTask, Task, TaskFilter } from './types/task'
 
+// Головний компонент. Тут живе стан, потрібний кільком компонентам:
+// список завдань і обраний фільтр. Дочірні компоненти отримують їх через props
+// і змінюють через callback-функції
 function App() {
-  const [count, setCount] = useState(0)
+  const [tasks, setTasks] = useState<Task[]>(initialTasks)
+  const [filter, setFilter] = useState<TaskFilter>('all')
+
+  // --- Обчислювані значення (не state!) — рахуються з tasks при кожному рендері ---
+
+  // Завдання, які треба показати при поточному фільтрі. Вихідний масив tasks не змінюється
+  const visibleTasks = tasks.filter((task) => {
+    if (filter === 'active') return !task.completed
+    if (filter === 'completed') return task.completed
+    return true
+  })
+
+  const completedCount = tasks.filter((task) => task.completed).length
+  const counts: Record<TaskFilter, number> = {
+    all: tasks.length,
+    active: tasks.length - completedCount,
+    completed: completedCount,
+  }
+
+  // --- Зміна стану. Скрізь створюємо НОВИЙ масив, старий не чіпаємо ---
+
+  function addTask(data: NewTask) {
+    const newTask: Task = { ...data, id: Date.now(), completed: false }
+    // [...prev, newTask] — новий масив: старі завдання + нове в кінці
+    setTasks((prev) => [...prev, newTask])
+  }
+
+  function toggleTask(id: number) {
+    // map повертає новий масив; потрібне завдання замінюємо новим об'єктом
+    setTasks((prev) =>
+      prev.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task)),
+    )
+  }
+
+  function deleteTask(id: number) {
+    // filter повертає новий масив без видаленого завдання
+    setTasks((prev) => prev.filter((task) => task.id !== id))
+  }
+
+  function clearCompleted() {
+    setTasks((prev) => prev.filter((task) => !task.completed))
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app">
+      <Header />
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <main className="app__content">
+        <TaskForm onAdd={addTask} />
+        <TaskStats tasks={tasks} />
+        <TaskFilters
+          current={filter}
+          counts={counts}
+          onChange={setFilter}
+          onClearCompleted={clearCompleted}
+        />
+        <TaskList
+          tasks={visibleTasks}
+          hasAnyTasks={tasks.length > 0}
+          onToggle={toggleTask}
+          onDelete={deleteTask}
+        />
+      </main>
+    </div>
   )
 }
 
