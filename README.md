@@ -1,32 +1,63 @@
-# React + TypeScript + Vite
+# Study Planner
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Лабораторна робота №8 — **React Fundamentals: компоненти, JSX, props, стан, події та списки**.
 
-Currently, two official plugins are available:
+Автор: Шумейко Тетяна Сергіївна ([ShumeikoTetiana](https://github.com/ShumeikoTetiana))
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Простий планувальник навчальних завдань: перегляд списку, додавання, позначення виконаним, видалення, фільтр і статистика. Дані зберігаються лише в пам'яті React (після перезавантаження сторінки повертаються початкові завдання).
 
-## React Compiler
+## Технології
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19 + TypeScript
+- Vite
+- SCSS + BEM
+- ESLint
 
-## Expanding the Oxlint configuration
+## Запуск
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+Потрібен Node.js 22.22 або новіший.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev      # запуск у режимі розробки
+npm run lint     # перевірка ESLint
+npm run build    # перевірка типів TypeScript і збірка
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Структура
+
+```
+src/
+├── components/
+│   ├── Header.tsx        # заголовок застосунку
+│   ├── TaskForm.tsx      # форма додавання завдання
+│   ├── TaskStats.tsx     # статистика: усього / виконано / не виконано
+│   ├── TaskFilters.tsx   # кнопки фільтра + «Очистити виконані»
+│   ├── TaskList.tsx      # список завдань (map) і повідомлення про порожній список
+│   ├── TaskItem.tsx      # одне завдання з кнопками
+│   └── *.scss            # стилі кожного компонента (BEM)
+├── types/task.ts         # тип Task, Priority, TaskFilter
+├── data/initialTasks.ts  # початкові завдання
+├── styles/               # змінні та базові глобальні стилі
+├── App.tsx               # стан застосунку і логіка змін
+└── main.tsx              # точка входу
+```
+
+## Як компоненти взаємодіють
+
+```
+App  (state: tasks, filter)
+├── Header
+├── TaskForm      ── onAdd(task) ──────────────► App
+├── TaskStats     ◄── tasks
+├── TaskFilters   ◄── current, counts   ── onChange(filter), onClearCompleted() ──► App
+└── TaskList      ◄── visibleTasks
+    └── TaskItem  ◄── task              ── onToggle(id), onDelete(id) ──► App
+```
+
+Дані йдуть **згори вниз** через props, а про дії користувача дочірні компоненти повідомляють **знизу вгору** через callback-функції.
+
+## Додаткові завдання
+
+- Лічильник кількості завдань у кнопках фільтра.
+- Кнопка «Очистити виконані» (показується лише коли є виконані завдання).
