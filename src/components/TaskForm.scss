@@ -1,0 +1,81 @@
+@use '../styles/variables' as *;
+
+.task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius;
+
+  &__heading {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+
+    @media (max-width: 520px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__label {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  &__input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid $color-border;
+    border-radius: 8px;
+    font: inherit;
+    background: #fff;
+
+    &:focus {
+      outline: 2px solid $color-primary;
+      outline-offset: -1px;
+      border-color: transparent;
+    }
+
+    &--textarea {
+      resize: vertical;
+    }
+
+    &--invalid {
+      border-color: $color-danger;
+    }
+  }
+
+  &__error {
+    font-size: 0.85rem;
+    color: $color-danger;
+  }
+
+  &__submit {
+    align-self: flex-start;
+    padding: 9px 24px;
+    border: none;
+    border-radius: 8px;
+    background: $color-primary;
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      background: $color-primary-dark;
+    }
+  }
+}
