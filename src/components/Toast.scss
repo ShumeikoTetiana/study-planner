@@ -1,0 +1,85 @@
+@use '../styles/variables' as *;
+
+.toast {
+  overflow: hidden;
+  min-width: 260px;
+  max-width: 360px;
+  background: $color-text;
+  color: #fff;
+  border-radius: $radius;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  pointer-events: auto;
+  animation: toast-in 0.2s ease-out;
+
+  &__body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+
+  &__message {
+    font-size: 0.95rem;
+  }
+
+  &__action {
+    flex-shrink: 0;
+    padding: 4px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 6px;
+    background: transparent;
+    color: #fff;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  }
+
+  &__progress {
+    height: 4px;
+    background: $color-primary;
+    transform-origin: left;
+    animation-name: toast-progress;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+  }
+
+  &--success &__progress {
+    background: $color-success;
+  }
+
+  &--error &__progress {
+    background: $color-danger;
+  }
+
+  &--info &__progress {
+    background: $color-medium;
+  }
+}
+
+@keyframes toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
