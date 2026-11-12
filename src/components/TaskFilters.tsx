@@ -1,12 +1,6 @@
+import { useTaskContext } from '../hooks/useTaskContext'
 import type { TaskFilter } from '../types/task'
 import './TaskFilters.scss'
-
-interface TaskFiltersProps {
-  current: TaskFilter // який фільтр зараз обрано
-  counts: Record<TaskFilter, number> // скільки завдань у кожному фільтрі
-  onChange: (filter: TaskFilter) => void
-  onClearCompleted: () => void
-}
 
 const FILTERS: { value: TaskFilter; label: string }[] = [
   { value: 'all', label: 'Всі' },
@@ -14,34 +8,49 @@ const FILTERS: { value: TaskFilter; label: string }[] = [
   { value: 'completed', label: 'Виконані' },
 ]
 
-// Кнопки фільтра. Сам фільтр зберігається в App,
-// а цей компонент лише показує кнопки і повідомляє, яку натиснули
-function TaskFilters({ current, counts, onChange, onClearCompleted }: TaskFiltersProps) {
+// Кнопки фільтра + «Очистити виконані» і «Скинути дані».
+// Усе потрібне бере з Context
+function TaskFilters() {
+  const { tasks, filter, setFilter, clearCompleted, resetTasks } = useTaskContext()
+
+  const completedCount = tasks.filter((task) => task.completed).length
+  const counts: Record<TaskFilter, number> = {
+    all: tasks.length,
+    active: tasks.length - completedCount,
+    completed: completedCount,
+  }
+
   return (
     <div className="task-filters">
       <div className="task-filters__group">
-        {FILTERS.map((filter) => (
+        {FILTERS.map((item) => (
           <button
-            key={filter.value}
+            key={item.value}
             type="button"
             // Активний фільтр позначаємо модифікатором --active
             className={`task-filters__button ${
-              current === filter.value ? 'task-filters__button--active' : ''
+              filter === item.value ? 'task-filters__button--active' : ''
             }`}
-            onClick={() => onChange(filter.value)}
+            onClick={() => setFilter(item.value)}
           >
-            {filter.label}
-            <span className="task-filters__count">{counts[filter.value]}</span>
+            {item.label}
+            <span className="task-filters__count">{counts[item.value]}</span>
           </button>
         ))}
       </div>
 
-      {/* Кнопку очищення показуємо лише тоді, коли є що очищати */}
-      {counts.completed > 0 && (
-        <button type="button" className="task-filters__clear" onClick={onClearCompleted}>
+      <div className="task-filters__group">
+        <button type="button" className="task-filters__link" onClick={clearCompleted}>
           Очистити виконані
         </button>
-      )}
+        <button
+          type="button"
+          className="task-filters__link task-filters__link--muted"
+          onClick={resetTasks}
+        >
+          Скинути дані
+        </button>
+      </div>
     </div>
   )
 }

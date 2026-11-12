@@ -1,13 +1,11 @@
-import type { Task } from '../types/task'
+import { useTaskContext } from '../hooks/useTaskContext'
 import './TaskStats.scss'
-
-interface TaskStatsProps {
-  tasks: Task[]
-}
 
 // Статистика. Окремого стану для лічильників немає:
 // числа щоразу рахуються з поточного масиву завдань, тому завжди актуальні
-function TaskStats({ tasks }: TaskStatsProps) {
+function TaskStats() {
+  const { tasks } = useTaskContext()
+
   const total = tasks.length
   const completed = tasks.filter((task) => task.completed).length
   const active = total - completed

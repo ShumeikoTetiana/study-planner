@@ -1,18 +1,20 @@
-import type { Task } from '../types/task'
+import { useTaskContext } from '../hooks/useTaskContext'
 import TaskItem from './TaskItem'
 import './TaskList.scss'
 
-interface TaskListProps {
-  tasks: Task[] // завдання, які треба показати (вже відфільтровані)
-  hasAnyTasks: boolean // чи є взагалі хоч одне завдання (без фільтра)
-  onToggle: (id: number) => void
-  onDelete: (id: number) => void
-}
+// Список завдань. Завдання та фільтр бере з Context — props більше не потрібні
+function TaskList() {
+  const { tasks, filter } = useTaskContext()
 
-// Список завдань. Показує або повідомлення, або елементи списку через map
-function TaskList({ tasks, hasAnyTasks, onToggle, onDelete }: TaskListProps) {
+  // Відфільтрований список рахуємо під час рендеру (derived state, без useEffect)
+  const visibleTasks = tasks.filter((task) => {
+    if (filter === 'active') return !task.completed
+    if (filter === 'completed') return task.completed
+    return true
+  })
+
   // Умовний рендеринг: завдань немає зовсім
-  if (!hasAnyTasks) {
+  if (tasks.length === 0) {
     return (
       <p className="task-list__empty">
         Завдань поки немає.
@@ -23,15 +25,15 @@ function TaskList({ tasks, hasAnyTasks, onToggle, onDelete }: TaskListProps) {
   }
 
   // Завдання є, але жодне не підходить під обраний фільтр
-  if (tasks.length === 0) {
+  if (visibleTasks.length === 0) {
     return <p className="task-list__empty">За цим фільтром завдань немає.</p>
   }
 
   return (
     <ul className="task-list">
-      {tasks.map((task) => (
+      {visibleTasks.map((task) => (
         // key — стабільний id завдання, а не індекс у масиві
-        <TaskItem key={task.id} task={task} onToggle={onToggle} onDelete={onDelete} />
+        <TaskItem key={task.id} task={task} />
       ))}
     </ul>
   )

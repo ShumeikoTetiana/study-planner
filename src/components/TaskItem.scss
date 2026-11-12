@@ -80,6 +80,12 @@
       color: #fff;
     }
 
+    &--edit {
+      background: transparent;
+      color: $color-primary;
+      border-color: $color-primary;
+    }
+
     &--delete {
       background: transparent;
       color: $color-danger;
@@ -109,6 +115,23 @@
     .task-item__button--toggle {
       background: $color-muted;
     }
+  }
+
+  // Завдання чекає на видалення: приглушене, пунктирна рамка
+  &--pending {
+    opacity: 0.55;
+    border-style: dashed;
+    border-left-color: $color-danger;
+
+    .task-item__status {
+      color: $color-danger;
+      font-weight: 600;
+    }
+  }
+
+  // Картка у режимі редагування — показує форму на всю ширину
+  &--editing {
+    display: block;
   }
 
   @media (max-width: 520px) {
