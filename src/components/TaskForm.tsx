@@ -1,9 +1,11 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
-import { PRIORITY_LABELS, type NewTask, type Priority } from '../types/task'
+import { useTaskContext } from '../hooks/useTaskContext'
+import { PRIORITY_LABELS, type NewTask, type Priority, type Task } from '../types/task'
 import './TaskForm.scss'
 
 interface TaskFormProps {
-  onAdd: (task: NewTask) => void
+  task?: Task // якщо передано — форма працює в режимі редагування цього завдання
+  onDone?: () => void // викликається після збереження або «Скасувати» (закриває редагування)
 }
 
 // Порожня форма — з неї стартуємо і до неї повертаємось після додавання
@@ -16,11 +18,24 @@ const EMPTY_FORM: NewTask = {
 
 const PRIORITIES: Priority[] = ['low', 'medium', 'high']
 
-// Форма додавання завдання.
+// Форма додавання та редагування завдання.
 // Значення полів зберігаються у локальному стані форми (useState),
-// а готове завдання передається батьку через callback onAdd
-function TaskForm({ onAdd }: TaskFormProps) {
-  const [form, setForm] = useState<NewTask>(EMPTY_FORM)
+// а зберігаються через функції з Context: addTask або updateTask
+function TaskForm({ task, onDone }: TaskFormProps) {
+  const { addTask, updateTask } = useTaskContext()
+  const isEdit = Boolean(task)
+
+  // У режимі редагування поля одразу заповнені даними завдання
+  const [form, setForm] = useState<NewTask>(() =>
+    task
+      ? {
+          title: task.title,
+          description: task.description,
+          category: task.category,
+          priority: task.priority,
+        }
+      : EMPTY_FORM,
+  )
   const [error, setError] = useState('')
 
   // Один обробник для всіх полів: беремо name поля і його нове значення.
@@ -47,21 +62,33 @@ function TaskForm({ onAdd }: TaskFormProps) {
       return
     }
 
-    onAdd({
+    const data: NewTask = {
       title,
       description: form.description.trim(),
       category: form.category.trim() || 'Загальне',
       priority: form.priority,
-    })
+    }
 
+    if (task) {
+      // Зміни йдуть через dispatch у reducer, об'єкт завдання напряму не чіпаємо
+      updateTask(task.id, data)
+      onDone?.()
+      return
+    }
+
+    addTask(data)
     // Очищуємо форму після успішного додавання
     setForm(EMPTY_FORM)
     setError('')
   }
 
   return (
-    <form className="task-form" onSubmit={handleSubmit} noValidate>
-      <h2 className="task-form__heading">Нове завдання</h2>
+    <form
+      className={`task-form ${isEdit ? 'task-form--edit' : ''}`}
+      onSubmit={handleSubmit}
+      noValidate
+    >
+      <h2 className="task-form__heading">{isEdit ? 'Редагування завдання' : 'Нове завдання'}</h2>
 
       <label className="task-form__field">
         <span className="task-form__label">Назва *</span>
@@ -117,9 +144,16 @@ function TaskForm({ onAdd }: TaskFormProps) {
         </label>
       </div>
 
-      <button type="submit" className="task-form__submit">
-        Додати
-      </button>
+      <div className="task-form__actions">
+        <button type="submit" className="task-form__submit">
+          {isEdit ? 'Зберегти' : 'Додати'}
+        </button>
+        {isEdit && (
+          <button type="button" className="task-form__cancel" onClick={onDone}>
+            Скасувати
+          </button>
+        )}
+      </div>
     </form>
   )
 }
