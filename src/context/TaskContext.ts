@@ -2,8 +2,7 @@ import { createContext } from 'react'
 import type { PendingDelete } from '../reducers/taskReducer'
 import type { NewTask, Task, TaskFilter } from '../types/task'
 
-// Скільки часу є, щоб натиснути «Скасувати» (мс)
-export const UNDO_DELAY = 5000
+export const UNDO_DELAY = 3000
 
 export type ToastType = 'success' | 'error' | 'info'
 
@@ -13,8 +12,6 @@ export interface ToastData {
   type: ToastType
 }
 
-// Що Context дає компонентам: дані та готові функції.
-// Компоненти не знають ні про reducer, ні про таймер — просто викликають ці функції
 export interface TaskContextValue {
   tasks: Task[]
   filter: TaskFilter
@@ -31,5 +28,4 @@ export interface TaskContextValue {
   hideToast: () => void
 }
 
-// Сам Context. null — означає «використали поза TaskProvider»
 export const TaskContext = createContext<TaskContextValue | null>(null)

@@ -1,19 +1,15 @@
 import { initialTasks } from '../data/initialTasks'
 import type { NewTask, Task } from '../types/task'
 
-// Завдання, які чекають на остаточне видалення (Undoable Delete).
-// Одне завдання — після «Видалити», кілька — після «Очистити виконані»
 export interface PendingDelete {
   ids: number[]
 }
 
-// Увесь стан, яким керує reducer
 export interface TaskState {
   tasks: Task[]
   pendingDelete: PendingDelete | null
 }
 
-// Усі можливі дії. Кожна має свій type і, якщо треба, payload з даними
 export type TaskAction =
   | { type: 'add'; payload: { task: Task } }
   | { type: 'toggle'; payload: { id: number } }
@@ -25,7 +21,6 @@ export type TaskAction =
   | { type: 'reset' }
 
 // Прибирає зі списку завдання, які вже чекали на видалення.
-// Потрібно, коли нове видалення починається раніше, ніж закінчився таймер попереднього
 function withoutPending(state: TaskState): Task[] {
   if (!state.pendingDelete) return state.tasks
   const ids = state.pendingDelete.ids
@@ -33,7 +28,6 @@ function withoutPending(state: TaskState): Task[] {
 }
 
 // Reducer — чиста функція: отримує старий стан і дію, повертає НОВИЙ стан.
-// Тут немає таймерів, localStorage, запитів чи роботи з DOM
 export function taskReducer(state: TaskState, action: TaskAction): TaskState {
   switch (action.type) {
     case 'add':
@@ -55,14 +49,12 @@ export function taskReducer(state: TaskState, action: TaskAction): TaskState {
         ),
       }
 
-    // Не видаляємо одразу, а лише позначаємо завдання як «буде видалено»
     case 'requestDelete':
       return {
         tasks: withoutPending(state),
         pendingDelete: { ids: [action.payload.id] },
       }
 
-    // Те саме, але для всіх виконаних завдань одразу (з можливістю Undo)
     case 'clearCompleted': {
       const tasks = withoutPending(state)
       const ids = tasks.filter((task) => task.completed).map((task) => task.id)
@@ -70,11 +62,9 @@ export function taskReducer(state: TaskState, action: TaskAction): TaskState {
       return { tasks, pendingDelete: { ids } }
     }
 
-    // Таймер закінчився — видаляємо остаточно
     case 'confirmDelete':
       return { tasks: withoutPending(state), pendingDelete: null }
 
-    // Натиснули «Скасувати» — завдання залишаються
     case 'undoDelete':
       return { ...state, pendingDelete: null }
 
