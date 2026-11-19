@@ -8,7 +8,8 @@
   padding: 0;
   list-style: none;
 
-  &__empty {
+  // Блок для станів loading / error / empty
+  &__state {
     margin: 0;
     padding: 32px 16px;
     text-align: center;
@@ -16,5 +17,28 @@
     background: $color-surface;
     border: 1px dashed $color-border;
     border-radius: $radius;
+
+    &--error {
+      border-color: $color-danger;
+      color: $color-danger;
+    }
+  }
+
+  &__message {
+    margin: 0 0 12px;
+  }
+
+  &__retry {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 8px;
+    background: $color-danger;
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.85;
+    }
   }
 }

@@ -15,9 +15,22 @@
     min-width: 0;
   }
 
+  // Назва — кнопка, що відкриває деталі
   &__title {
-    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    color: $color-text;
+    font: inherit;
     font-size: 1.05rem;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      color: $color-primary;
+      text-decoration: underline;
+    }
   }
 
   &__description {
@@ -95,6 +108,42 @@
     &:hover {
       opacity: 0.85;
     }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: wait;
+    }
+  }
+
+  // Підтвердження видалення
+  &__confirm {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  &__confirm-text {
+    color: $color-danger;
+    font-weight: 600;
+  }
+
+  // Режим зміни назви
+  &__edit {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+
+  &__input {
+    flex: 1;
+    min-width: 180px;
+    padding: 6px 10px;
+    border: 1px solid $color-border;
+    border-radius: 8px;
+    font: inherit;
   }
 
   // Виконане завдання: зелена смуга, закреслена назва, блідіший вигляд
@@ -115,23 +164,6 @@
     .task-item__button--toggle {
       background: $color-muted;
     }
-  }
-
-  // Завдання чекає на видалення: приглушене, пунктирна рамка
-  &--pending {
-    opacity: 0.55;
-    border-style: dashed;
-    border-left-color: $color-danger;
-
-    .task-item__status {
-      color: $color-danger;
-      font-weight: 600;
-    }
-  }
-
-  // Картка у режимі редагування — показує форму на всю ширину
-  &--editing {
-    display: block;
   }
 
   @media (max-width: 520px) {

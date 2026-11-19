@@ -1,40 +1,72 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useTaskContext } from '../hooks/useTaskContext'
 import { PRIORITY_LABELS, type Task } from '../types/task'
-import TaskForm from './TaskForm'
 import './TaskItem.scss'
 
 interface TaskItemProps {
   task: Task
 }
 
-// Одне завдання у списку. Саме завдання приходить через props від TaskList,
-// а дії (виконати, видалити) беруться з Context
+// Одне завдання у списку: перемикання completed, зміна назви, видалення з підтвердженням
 function TaskItem({ task }: TaskItemProps) {
-  const { toggleTask, requestDelete, pendingDelete } = useTaskContext()
-  // Локальний стан: чи відкрита форма редагування саме цього завдання
-  const [isEditing, setIsEditing] = useState(false)
+  const { toggleTask, renameTask, deleteTask, openDetails } = useTaskContext()
 
-  // Завдання чекає на остаточне видалення (йде 5-секундний таймер)
-  const isPending = pendingDelete?.ids.includes(task.id) ?? false
+  // Локальний UI state цієї картки
+  const [mode, setMode] = useState<'view' | 'edit' | 'confirm'>('view')
+  const [title, setTitle] = useState(task.title)
+  const [isBusy, setIsBusy] = useState(false) // йде запит — кнопки неактивні
 
-  if (isEditing) {
+  // Обгортка: поки запит виконується — блокуємо кнопки
+  async function run(action: () => Promise<boolean>) {
+    setIsBusy(true)
+    const ok = await action()
+    setIsBusy(false)
+    return ok
+  }
+
+  async function handleRename(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const newTitle = title.trim()
+    if (!newTitle) return
+    const ok = await run(() => renameTask(task, newTitle))
+    if (ok) setMode('view')
+  }
+
+  // Режим редагування назви
+  if (mode === 'edit') {
     return (
-      <li className="task-item task-item--editing">
-        <TaskForm task={task} onDone={() => setIsEditing(false)} />
+      <li className="task-item">
+        <form className="task-item__edit" onSubmit={handleRename}>
+          <input
+            className="task-item__input"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            autoFocus
+          />
+          <button type="submit" className="task-item__button task-item__button--toggle" disabled={isBusy}>
+            {isBusy ? '…' : 'Зберегти'}
+          </button>
+          <button
+            type="button"
+            className="task-item__button task-item__button--edit"
+            onClick={() => {
+              setTitle(task.title)
+              setMode('view')
+            }}
+          >
+            Скасувати
+          </button>
+        </form>
       </li>
     )
   }
 
-  const modifiers = [
-    task.completed ? 'task-item--completed' : '',
-    isPending ? 'task-item--pending' : '',
-  ].join(' ')
-
   return (
-    <li className={`task-item ${modifiers}`}>
+    <li className={`task-item ${task.completed ? 'task-item--completed' : ''}`}>
       <div className="task-item__body">
-        <h3 className="task-item__title">{task.title}</h3>
+        <button type="button" className="task-item__title" onClick={() => openDetails(task.id)}>
+          {task.title}
+        </button>
 
         {task.description && <p className="task-item__description">{task.description}</p>}
 
@@ -43,33 +75,51 @@ function TaskItem({ task }: TaskItemProps) {
           <span className={`task-item__badge task-item__badge--${task.priority}`}>
             {PRIORITY_LABELS[task.priority]}
           </span>
-          <span className="task-item__status">
-            {isPending ? 'Буде видалено…' : task.completed ? '✔ Виконано' : 'Не виконано'}
-          </span>
+          <span className="task-item__status">{task.completed ? '✔ Виконано' : 'Не виконано'}</span>
         </div>
       </div>
 
-      {/* Поки завдання чекає на видалення, кнопки ховаємо — скасувати можна в toast */}
-      {!isPending && (
-        <div className="task-item__actions">
+      {/* Підтвердження видалення прямо в картці */}
+      {mode === 'confirm' ? (
+        <div className="task-item__confirm">
+          <span className="task-item__confirm-text">Видалити завдання?</span>
           <button
             type="button"
-            className="task-item__button task-item__button--toggle"
-            onClick={() => toggleTask(task.id)}
+            className="task-item__button task-item__button--delete"
+            disabled={isBusy}
+            onClick={() => run(() => deleteTask(task))}
           >
-            {task.completed ? 'Повернути' : 'Виконано'}
+            {isBusy ? '…' : 'Так'}
           </button>
           <button
             type="button"
             className="task-item__button task-item__button--edit"
-            onClick={() => setIsEditing(true)}
+            onClick={() => setMode('view')}
+          >
+            Ні
+          </button>
+        </div>
+      ) : (
+        <div className="task-item__actions">
+          <button
+            type="button"
+            className="task-item__button task-item__button--toggle"
+            disabled={isBusy}
+            onClick={() => run(() => toggleTask(task))}
+          >
+            {isBusy ? '…' : task.completed ? 'Повернути' : 'Виконано'}
+          </button>
+          <button
+            type="button"
+            className="task-item__button task-item__button--edit"
+            onClick={() => setMode('edit')}
           >
             Редагувати
           </button>
           <button
             type="button"
             className="task-item__button task-item__button--delete"
-            onClick={() => requestDelete(task.id)}
+            onClick={() => setMode('confirm')}
           >
             Видалити
           </button>

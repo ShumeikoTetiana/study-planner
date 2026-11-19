@@ -82,25 +82,4 @@
       background: $color-primary-dark;
     }
   }
-
-  &__cancel {
-    padding: 9px 18px;
-    border: 1px solid $color-border;
-    border-radius: 8px;
-    background: transparent;
-    color: $color-text;
-    font: inherit;
-    cursor: pointer;
-
-    &:hover {
-      border-color: $color-muted;
-    }
-  }
-
-  // Режим редагування всередині картки завдання: без власної рамки
-  &--edit {
-    padding: 0;
-    border: none;
-    background: transparent;
-  }
 }

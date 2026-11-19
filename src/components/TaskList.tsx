@@ -2,37 +2,47 @@ import { useTaskContext } from '../hooks/useTaskContext'
 import TaskItem from './TaskItem'
 import './TaskList.scss'
 
-// Список завдань. Завдання та фільтр бере з Context — props більше не потрібні
+// Список завдань з окремими станами: loading, error, empty, success
 function TaskList() {
-  const { tasks, filter } = useTaskContext()
+  const { tasks, status, error, reload, filter } = useTaskContext()
 
-  // Відфільтрований список рахуємо під час рендеру (derived state, без useEffect)
+  // 1. Loading
+  if (status === 'loading') {
+    return <p className="task-list__state">Завантаження…</p>
+  }
+
+  // 2. Error + можливість повторити запит
+  if (status === 'error') {
+    return (
+      <div className="task-list__state task-list__state--error">
+        <p className="task-list__message">Помилка завантаження: {error}</p>
+        <button type="button" className="task-list__retry" onClick={reload}>
+          Спробувати ще
+        </button>
+      </div>
+    )
+  }
+
+  // 3. Empty — сервер нічого не повернув
+  if (tasks.length === 0) {
+    return <p className="task-list__state">Завдань не знайдено.</p>
+  }
+
+  // Фільтр — client state, застосовується до поточної сторінки
   const visibleTasks = tasks.filter((task) => {
     if (filter === 'active') return !task.completed
     if (filter === 'completed') return task.completed
     return true
   })
 
-  // Умовний рендеринг: завдань немає зовсім
-  if (tasks.length === 0) {
-    return (
-      <p className="task-list__empty">
-        Завдань поки немає.
-        <br />
-        Додайте перше навчальне завдання.
-      </p>
-    )
-  }
-
-  // Завдання є, але жодне не підходить під обраний фільтр
   if (visibleTasks.length === 0) {
-    return <p className="task-list__empty">За цим фільтром завдань немає.</p>
+    return <p className="task-list__state">На цій сторінці немає завдань за обраним фільтром.</p>
   }
 
+  // 4. Success
   return (
     <ul className="task-list">
       {visibleTasks.map((task) => (
-        // key — стабільний id завдання, а не індекс у масиві
         <TaskItem key={task.id} task={task} />
       ))}
     </ul>

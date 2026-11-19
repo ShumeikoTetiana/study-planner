@@ -8,10 +8,9 @@ const FILTERS: { value: TaskFilter; label: string }[] = [
   { value: 'completed', label: 'Виконані' },
 ]
 
-// Кнопки фільтра + «Очистити виконані» і «Скинути дані».
-// Усе потрібне бере з Context
+// Кнопки фільтра (client state). Лічильники — для поточної сторінки
 function TaskFilters() {
-  const { tasks, filter, setFilter, clearCompleted, resetTasks } = useTaskContext()
+  const { tasks, filter, setFilter } = useTaskContext()
 
   const completedCount = tasks.filter((task) => task.completed).length
   const counts: Record<TaskFilter, number> = {
@@ -27,7 +26,6 @@ function TaskFilters() {
           <button
             key={item.value}
             type="button"
-            // Активний фільтр позначаємо модифікатором --active
             className={`task-filters__button ${
               filter === item.value ? 'task-filters__button--active' : ''
             }`}
@@ -37,19 +35,6 @@ function TaskFilters() {
             <span className="task-filters__count">{counts[item.value]}</span>
           </button>
         ))}
-      </div>
-
-      <div className="task-filters__group">
-        <button type="button" className="task-filters__link" onClick={clearCompleted}>
-          Очистити виконані
-        </button>
-        <button
-          type="button"
-          className="task-filters__link task-filters__link--muted"
-          onClick={resetTasks}
-        >
-          Скинути дані
-        </button>
       </div>
     </div>
   )
