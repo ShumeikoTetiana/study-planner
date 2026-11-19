@@ -1,9 +1,6 @@
 import { createContext } from 'react'
-import type { PendingDelete } from '../reducers/taskReducer'
+import type { LoadStatus } from '../hooks/useTasks'
 import type { NewTask, Task, TaskFilter } from '../types/task'
-
-// Скільки часу є, щоб натиснути «Скасувати» (мс)
-export const UNDO_DELAY = 5000
 
 export type ToastType = 'success' | 'error' | 'info'
 
@@ -13,23 +10,32 @@ export interface ToastData {
   type: ToastType
 }
 
-// Що Context дає компонентам: дані та готові функції.
-// Компоненти не знають ні про reducer, ні про таймер — просто викликають ці функції
+// Що Context дає компонентам
 export interface TaskContextValue {
+  // server state (дані з API)
   tasks: Task[]
+  total: number
+  status: LoadStatus
+  error: string
+  page: number
+  totalPages: number
+  goToPage: (page: number) => void
+  reload: () => void
+
+  // операції — повертають true, якщо все вдалося
+  addTask: (data: NewTask) => Promise<boolean>
+  toggleTask: (task: Task) => Promise<boolean>
+  renameTask: (task: Task, title: string) => Promise<boolean>
+  deleteTask: (task: Task) => Promise<boolean>
+
+  // client/UI state
   filter: TaskFilter
   setFilter: (filter: TaskFilter) => void
-  pendingDelete: PendingDelete | null
-  addTask: (data: NewTask) => void
-  updateTask: (id: number, changes: NewTask) => void
-  toggleTask: (id: number) => void
-  requestDelete: (id: number) => void
-  undoDelete: () => void
-  clearCompleted: () => void
-  resetTasks: () => void
+  selectedTaskId: number | null
+  openDetails: (id: number) => void
+  closeDetails: () => void
   toast: ToastData | null
   hideToast: () => void
 }
 
-// Сам Context. null — означає «використали поза TaskProvider»
 export const TaskContext = createContext<TaskContextValue | null>(null)
